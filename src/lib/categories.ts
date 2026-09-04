@@ -6,6 +6,7 @@ export type CategoryNode = {
   kind: string;
   parentId: string | null;
   children?: CategoryNode[];
+  budget?: { id: string; amount: number } | null;
 };
 
 export type FlatCategoryOption = {

@@ -10,12 +10,16 @@ creciendo hacia el seguimiento de inversiones.
 
 - **Subir gasto**: arrastra una captura de tu app/web bancaria y la IA
   extrae fecha, descripción, comercio, importe y una categoría sugerida.
-  Puedes revisar y corregir cada movimiento antes de guardarlo.
-- **Resumen**: gastos e ingresos del mes, gráfico de gastos por categoría y
-  evolución mensual.
-- **Movimientos**: listado completo, filtrable por texto y categoría, con
-  edición de categoría y borrado.
-- **Categorías**: gestiona el árbol de ramas y subramas de gasto/ingreso.
+  Puedes revisar y corregir cada movimiento antes de guardarlo, y ves un
+  aviso claro si falta configurar la clave de Anthropic.
+- **Resumen**: gastos e ingresos del mes, progreso de tus presupuestos
+  mensuales por categoría, gráfico de gastos por categoría y evolución
+  mensual.
+- **Movimientos**: listado filtrable por texto y categoría, edición
+  completa en línea (fecha, descripción, importe y categoría), borrado y
+  exportación a CSV.
+- **Categorías**: gestiona el árbol de ramas y subramas de gasto/ingreso, y
+  define un presupuesto mensual opcional por rama principal.
 - **Inversión**: sección preparada para el futuro seguimiento de carteras.
 
 ## Stack técnico

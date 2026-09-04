@@ -118,7 +118,7 @@ export function UploadClient() {
         const data = await res.json();
         throw new Error(data.error || "No se han podido guardar los movimientos.");
       }
-      router.push("/transactions");
+      router.push(`/transactions?guardados=${drafts.length}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error inesperado.");

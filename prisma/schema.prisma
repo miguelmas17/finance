@@ -20,10 +20,23 @@ model Category {
   children Category[] @relation("CategoryToSubcategories")
 
   transactions Transaction[]
+  budget       Budget?
 
   createdAt DateTime @default(now())
 
   @@unique([name, parentId])
+}
+
+// Límite de gasto mensual recurrente para una rama principal. Se compara
+// cada mes contra la suma de gastos de esa categoría y sus subcategorías.
+model Budget {
+  id         String   @id @default(cuid())
+  categoryId String   @unique
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  amount     Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Origen de una captura de pantalla subida por el usuario, con el

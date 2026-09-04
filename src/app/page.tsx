@@ -7,10 +7,13 @@ import { CategoryPieChart, MonthlyBarChart } from "./DashboardCharts";
 import { formatCurrency, formatDate, monthLabel } from "@/lib/format";
 
 export default async function Home() {
-  const transactions = await prisma.transaction.findMany({
-    include: { category: { include: { parent: true } } },
-    orderBy: { date: "desc" },
-  });
+  const [transactions, budgets] = await Promise.all([
+    prisma.transaction.findMany({
+      include: { category: { include: { parent: true } } },
+      orderBy: { date: "desc" },
+    }),
+    prisma.budget.findMany({ include: { category: true } }),
+  ]);
 
   const now = new Date();
   const currentMonthTx = transactions.filter((t) => {
@@ -47,6 +50,27 @@ export default async function Home() {
   const categoryData = Array.from(categoryTotals.values()).sort(
     (a, b) => b.value - a.value,
   );
+
+  const categoryMonthSpend = new Map<string, number>();
+  for (const t of currentMonthTx) {
+    if (t.amount >= 0) continue;
+    const topId = t.category?.parent?.id ?? t.category?.id;
+    if (!topId) continue;
+    categoryMonthSpend.set(
+      topId,
+      (categoryMonthSpend.get(topId) ?? 0) + Math.abs(t.amount),
+    );
+  }
+  const budgetProgress = budgets
+    .map((b) => ({
+      id: b.id,
+      name: b.category.name,
+      icon: b.category.icon,
+      color: b.category.color,
+      amount: b.amount,
+      spent: categoryMonthSpend.get(b.categoryId) ?? 0,
+    }))
+    .sort((a, b) => b.spent / b.amount - a.spent / a.amount);
 
   const months: { key: string; month: string; gastos: number; ingresos: number }[] =
     [];
@@ -96,6 +120,46 @@ export default async function Home() {
           tone={balanceMes >= 0 ? "success" : "danger"}
         />
       </div>
+
+      {budgetProgress.length > 0 && (
+        <div className="rounded-lg border border-border bg-surface p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold">Presupuestos del mes</h2>
+            <Link href="/categories" className="text-sm text-primary hover:underline">
+              Gestionar
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {budgetProgress.map((b) => {
+              const percent = Math.min(100, (b.spent / b.amount) * 100);
+              const over = b.spent > b.amount;
+              const barColor = over
+                ? "var(--danger)"
+                : percent >= 80
+                  ? "#eab308"
+                  : b.color;
+              return (
+                <div key={b.id}>
+                  <div className="mb-1 flex items-center justify-between text-sm">
+                    <span>
+                      {b.icon} {b.name}
+                    </span>
+                    <span className={over ? "font-medium text-danger" : "text-muted"}>
+                      {formatCurrency(b.spent)} / {formatCurrency(b.amount)}
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-background">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${percent}%`, backgroundColor: barColor }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {transactions.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border bg-surface p-10 text-center">

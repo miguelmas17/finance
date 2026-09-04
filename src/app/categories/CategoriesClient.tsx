@@ -34,11 +34,41 @@ export function CategoriesClient({
   const [newKind, setNewKind] = useState("EXPENSE");
   const [newColor, setNewColor] = useState(COLORS[0]);
   const [childName, setChildName] = useState<Record<string, string>>({});
+  const [budgetDrafts, setBudgetDrafts] = useState<Record<string, string>>(
+    () =>
+      Object.fromEntries(
+        initialCategories.map((c) => [c.id, c.budget?.amount?.toString() ?? ""]),
+      ),
+  );
+  const [savingBudget, setSavingBudget] = useState<string | null>(null);
 
   async function refresh() {
     const res = await fetch("/api/categories");
-    setCategories(await res.json());
+    const data: CategoryNode[] = await res.json();
+    setCategories(data);
+    setBudgetDrafts(
+      Object.fromEntries(
+        data.map((c) => [c.id, c.budget?.amount?.toString() ?? ""]),
+      ),
+    );
     router.refresh();
+  }
+
+  async function saveBudget(categoryId: string) {
+    setSavingBudget(categoryId);
+    try {
+      await fetch("/api/budgets", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          categoryId,
+          amount: Number(budgetDrafts[categoryId] || 0),
+        }),
+      });
+      await refresh();
+    } finally {
+      setSavingBudget(null);
+    }
   }
 
   async function createCategory(parentId: string | null) {
@@ -139,6 +169,37 @@ export function CategoriesClient({
                 Eliminar rama
               </button>
             </div>
+
+            {cat.kind === "EXPENSE" && (
+              <div className="mt-3 flex items-center gap-2 pl-6 text-sm">
+                <label className="text-muted" htmlFor={`budget-${cat.id}`}>
+                  Presupuesto mensual:
+                </label>
+                <input
+                  id={`budget-${cat.id}`}
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="Sin límite"
+                  value={budgetDrafts[cat.id] ?? ""}
+                  onChange={(e) =>
+                    setBudgetDrafts((prev) => ({
+                      ...prev,
+                      [cat.id]: e.target.value,
+                    }))
+                  }
+                  onBlur={() => saveBudget(cat.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                  }}
+                  className="w-28 rounded-md border border-border bg-background px-2 py-1"
+                />
+                <span className="text-muted">€/mes</span>
+                {savingBudget === cat.id && (
+                  <span className="text-xs text-muted">Guardando…</span>
+                )}
+              </div>
+            )}
 
             <ul className="mt-3 space-y-1 pl-6">
               {(cat.children ?? []).map((child) => (

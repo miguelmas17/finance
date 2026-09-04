@@ -7,7 +7,10 @@ export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({
     where: { parentId: null },
     orderBy: { name: "asc" },
-    include: { children: { orderBy: { name: "asc" } } },
+    include: {
+      children: { orderBy: { name: "asc" } },
+      budget: { select: { id: true, amount: true } },
+    },
   });
 
   return (
