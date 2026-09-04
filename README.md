@@ -92,22 +92,26 @@ tienen plan gratuito y no requieren tarjeta de crédito para este uso:
 2. En la configuración del proyecto, añade las variables de entorno:
    - `DATABASE_URL`: la cadena de conexión de Neon del paso anterior.
    - `ANTHROPIC_API_KEY`: tu clave de la API de Anthropic.
-3. Despliega. Vercel te da una URL pública (tipo
+3. Despliega. El propio build de Vercel ejecuta
+   `prisma migrate deploy` automáticamente (ver el script `build` en
+   `package.json`), así que las tablas se crean solas en cada despliegue —
+   no hace falta ejecutar nada a mano ni tener Node instalado en ningún
+   sitio para esto. Al terminar, Vercel te da una URL pública (tipo
    `https://finance-tuusuario.vercel.app`) accesible desde cualquier
    dispositivo.
 
-### 3. Aplicar las migraciones a la base de datos de producción
+### 3. Sembrar las categorías por defecto (solo la primera vez)
 
-Las tablas hay que crearlas una vez en la base de datos de Neon. Desde tu
-ordenador, con `DATABASE_URL` apuntando a Neon en tu `.env`:
+Las categorías iniciales sí hay que crearlas una vez, desde un entorno con
+acceso a la base de datos (tu ordenador, no sirve este sandbox de
+Claude Code). Con `DATABASE_URL` apuntando a Neon en tu `.env`:
 
 ```bash
-npx prisma migrate deploy
 npm run db:seed
 ```
 
-A partir de aquí, cualquier cambio de esquema futuro se aplica con
-`prisma migrate deploy` de la misma forma antes de desplegar.
+Los cambios de esquema futuros no necesitan ningún paso manual: se aplican
+solos en el siguiente despliegue de Vercel.
 
 ## Scripts
 
