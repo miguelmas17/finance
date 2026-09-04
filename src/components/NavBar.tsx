@@ -15,12 +15,15 @@ export function NavBar() {
   const pathname = usePathname();
 
   return (
-    <header className="border-b border-border bg-surface">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-3 sm:px-6">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
+    <header className="sticky top-0 z-10 border-b border-border bg-surface">
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
+        <Link
+          href="/"
+          className="shrink-0 text-lg font-semibold tracking-tight"
+        >
           💶 Mis Finanzas
         </Link>
-        <nav className="flex flex-1 flex-wrap gap-1 text-sm">
+        <nav className="-mx-4 flex gap-1 overflow-x-auto px-4 text-sm sm:mx-0 sm:flex-1 sm:flex-wrap sm:overflow-visible sm:px-0">
           {links.map((link) => {
             const active =
               link.href === "/"
@@ -30,7 +33,7 @@ export function NavBar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`rounded-md px-3 py-1.5 font-medium transition-colors ${
+                className={`shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 font-medium transition-colors ${
                   active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted hover:bg-background hover:text-foreground"
