@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Una "rama" del árbol de gastos. Puede tener una categoría padre para
+// formar subcategorías (p.ej. Alimentación > Supermercado).
+model Category {
+  id       String   @id @default(cuid())
+  name     String
+  icon     String   @default("💰")
+  color    String   @default("#6b7280")
+  kind     String   @default("EXPENSE") // EXPENSE | INCOME | INVESTMENT
+
+  parentId String?
+  parent   Category?  @relation("CategoryToSubcategories", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("CategoryToSubcategories")
+
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([name, parentId])
+}
+
+// Origen de una captura de pantalla subida por el usuario, con el
+// resultado del análisis por IA para poder auditar/reprocesar.
+model StatementUpload {
+  id           String   @id @default(cuid())
+  fileName     String
+  imageData    String // imagen original en base64 (data URL)
+  rawResponse  String? // JSON crudo devuelto por el modelo
+  status       String   @default("PENDING") // PENDING | PROCESSED | FAILED
+  createdAt    DateTime @default(now())
+
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  date        DateTime
+  description String
+  merchant    String?
+  amount      Float // negativo = gasto, positivo = ingreso
+  currency    String   @default("EUR")
+  notes       String?
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  uploadId String?
+  upload   StatementUpload? @relation(fields: [uploadId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
