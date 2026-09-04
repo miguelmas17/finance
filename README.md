@@ -6,6 +6,10 @@ categoría, y la app te permite organizarlos en "ramas" (categorías y
 subcategorías) para llevar el control de tus gastos. Está pensada para ir
 creciendo hacia el seguimiento de inversiones.
 
+Usa una única base de datos compartida (no una por dispositivo), para que
+veas los mismos movimientos tanto si subes la captura desde el móvil como
+desde el PC.
+
 ## Funcionalidades
 
 - **Subir gasto**: arrastra una captura de tu app/web bancaria y la IA
@@ -21,25 +25,31 @@ creciendo hacia el seguimiento de inversiones.
 - **Categorías**: gestiona el árbol de ramas y subramas de gasto/ingreso, y
   define un presupuesto mensual opcional por rama principal.
 - **Inversión**: sección preparada para el futuro seguimiento de carteras.
+- Interfaz responsive, pensada para usarse igual de bien desde el móvil
+  (donde subirás las capturas) que desde el PC.
 
 ## Stack técnico
 
 - [Next.js](https://nextjs.org) (App Router) + TypeScript + Tailwind CSS
-- [Prisma](https://www.prisma.io) con SQLite como base de datos
+- [Prisma](https://www.prisma.io) con PostgreSQL como base de datos
 - [Anthropic SDK](https://www.npmjs.com/package/@anthropic-ai/sdk) (Claude,
   con visión) para analizar las capturas de pantalla
 - [Recharts](https://recharts.org) para los gráficos
 
-## Puesta en marcha
+## Puesta en marcha en local (desarrollo)
 
-1. Copia las variables de entorno y añade tu clave de la API de Anthropic:
+Necesitas acceso a una base de datos PostgreSQL (puede ser local o ya la
+misma de Neon que uses en producción, ver más abajo).
+
+1. Copia las variables de entorno:
 
    ```bash
    cp .env.example .env
-   # Edita .env y rellena ANTHROPIC_API_KEY
    ```
 
-   Puedes conseguir una clave en <https://console.anthropic.com/>.
+   Rellena `ANTHROPIC_API_KEY` (consíguela en
+   <https://console.anthropic.com/>) y `DATABASE_URL` con tu cadena de
+   conexión de Postgres.
 
 2. Instala las dependencias:
 
@@ -47,10 +57,10 @@ creciendo hacia el seguimiento de inversiones.
    npm install
    ```
 
-3. Crea la base de datos y siembra las categorías por defecto:
+3. Crea las tablas y siembra las categorías por defecto:
 
    ```bash
-   npx prisma migrate dev --name init
+   npx prisma migrate dev
    npm run db:seed
    ```
 
@@ -62,6 +72,43 @@ creciendo hacia el seguimiento de inversiones.
 
    Abre <http://localhost:3000>.
 
+## Desplegar en producción (acceso desde cualquier dispositivo)
+
+Para usar la app desde el móvil y el PC sin depender de tu ordenador
+encendido, despliega la base de datos y la app en la nube. Las dos partes
+tienen plan gratuito y no requieren tarjeta de crédito para este uso:
+
+### 1. Base de datos: Neon (PostgreSQL gratis)
+
+1. Crea una cuenta en <https://neon.tech> (puedes entrar con GitHub).
+2. Crea un proyecto nuevo. Neon te da una cadena de conexión del tipo:
+   `postgresql://usuario:contraseña@ep-xxxx-pooler.region.aws.neon.tech/neondb?sslmode=require`
+3. Guarda esa cadena — es tu `DATABASE_URL` de producción.
+
+### 2. App: Vercel
+
+1. Crea una cuenta en <https://vercel.com> (puedes entrar con GitHub) e
+   importa este repositorio (`miguelmas17/finance`).
+2. En la configuración del proyecto, añade las variables de entorno:
+   - `DATABASE_URL`: la cadena de conexión de Neon del paso anterior.
+   - `ANTHROPIC_API_KEY`: tu clave de la API de Anthropic.
+3. Despliega. Vercel te da una URL pública (tipo
+   `https://finance-tuusuario.vercel.app`) accesible desde cualquier
+   dispositivo.
+
+### 3. Aplicar las migraciones a la base de datos de producción
+
+Las tablas hay que crearlas una vez en la base de datos de Neon. Desde tu
+ordenador, con `DATABASE_URL` apuntando a Neon en tu `.env`:
+
+```bash
+npx prisma migrate deploy
+npm run db:seed
+```
+
+A partir de aquí, cualquier cambio de esquema futuro se aplica con
+`prisma migrate deploy` de la misma forma antes de desplegar.
+
 ## Scripts
 
 - `npm run dev` – servidor de desarrollo
@@ -70,10 +117,11 @@ creciendo hacia el seguimiento de inversiones.
 - `npm run db:seed` – vuelve a sembrar las categorías por defecto si la
   tabla está vacía
 - `npx prisma studio` – explorador visual de la base de datos
+- `npx prisma migrate deploy` – aplica migraciones pendientes sin generar
+  nuevas (para producción)
 
 ## Notas
 
 - El análisis de capturas requiere `ANTHROPIC_API_KEY`; sin ella, la
   subida de gastos fallará (el resto de la app funciona igual).
-- La base de datos SQLite se guarda en `prisma/dev.db` y no se versiona en
-  git.
+- `DATABASE_URL` debe ser una cadena de conexión de PostgreSQL válida.
