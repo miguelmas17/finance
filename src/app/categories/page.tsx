@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { CategoriesClient } from "./CategoriesClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({
     where: { parentId: null },

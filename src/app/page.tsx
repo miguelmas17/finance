@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { StatCard } from "@/components/StatCard";
+
+export const dynamic = "force-dynamic";
 import { CategoryPieChart, MonthlyBarChart } from "./DashboardCharts";
 import { formatCurrency, formatDate, monthLabel } from "@/lib/format";
 

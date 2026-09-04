@@ -41,7 +41,7 @@ export function CategoryPieChart({ data }: { data: CategorySlice[] }) {
             <Cell key={entry.name} fill={entry.color} />
           ))}
         </Pie>
-        <Tooltip formatter={(value: number) => formatCurrency(value)} />
+        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
         <Legend />
       </PieChart>
     </ResponsiveContainer>
@@ -55,7 +55,7 @@ export function MonthlyBarChart({ data }: { data: MonthBar[] }) {
         <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
         <XAxis dataKey="month" fontSize={12} />
         <YAxis fontSize={12} />
-        <Tooltip formatter={(value: number) => formatCurrency(value)} />
+        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
         <Legend />
         <Bar dataKey="ingresos" fill="#16a34a" radius={[4, 4, 0, 0]} />
         <Bar dataKey="gastos" fill="#dc2626" radius={[4, 4, 0, 0]} />

@@ -32,8 +32,8 @@ export function TransactionsTable({
     if (search) params.set("q", search);
     if (categoryFilter) params.set("categoryId", categoryFilter);
 
-    setLoading(true);
     const timeout = setTimeout(() => {
+      setLoading(true);
       fetch(`/api/transactions?${params.toString()}`)
         .then((res) => res.json())
         .then(setTransactions)

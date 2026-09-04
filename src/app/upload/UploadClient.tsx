@@ -172,6 +172,7 @@ export function UploadClient() {
       {preview && (status === "review" || status === "saving") && (
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <div>
+            {/* eslint-disable-next-line @next/next/no-img-element -- blob: URL local, no optimizable por next/image */}
             <img
               src={preview}
               alt="Captura subida"

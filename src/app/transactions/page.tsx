@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { TransactionsTable } from "./TransactionsTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function TransactionsPage() {
   const categories = await prisma.category.findMany({
     where: { parentId: null },
